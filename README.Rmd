@@ -126,23 +126,25 @@ corrplot(cor(wine[, 1:11]), method = "color", tl.cex = 0.8)
 ```
 
 ## Boxplots by Wine Quality
-
 ```{r boxplots}
 p1 <- ggplot(wine, aes(x = quality_factor, y = alcohol)) + geom_boxplot() + ggtitle("Alcohol vs Quality")
 p2 <- ggplot(wine, aes(x = quality_factor, y = volatile.acidity)) + geom_boxplot() + ggtitle("Volatile Acidity vs Quality")
 grid.arrange(p1, p2, ncol = 2)
 ```
 
+## Histogram to show distribution of key variables
+```{r histograms}
+ggplot(wine, aes(x = alcohol)) + geom_histogram(bins = 30) + ggtitle("Distribution of Alcohol")
+```
+
 ## Hypothesis Testing
 T-test shows statistically significant difference in **alcohol content** between 
 wines rated 5 vs. 7 (`p < 0.05`)
-
 ```{r t-test}
 t.test(alcohol ~ quality_factor, data = wine %>% filter(quality %in% c(5, 7)))
 ```
 
 ## Logistic Regression (Good vs. Bad Wine)
-
 ```{r logistic-model}
 wine$good <- ifelse(wine$quality >= 7, 1, 0)
 

@@ -2,7 +2,7 @@
 
     ## 
     ## The downloaded binary packages are in
-    ##  /var/folders/qp/11c2sykd59dc_8h4549nm36h0000gn/T//RtmpfsuZWZ/downloaded_packages
+    ##  /var/folders/qp/11c2sykd59dc_8h4549nm36h0000gn/T//RtmpnjfO9j/downloaded_packages
 
     # Load necessary libraries
     library(tidyverse)
@@ -312,6 +312,12 @@ boxplot visualization, and created a binary label `good` = 1 if quality
     grid.arrange(p1, p2, ncol = 2)
 
 ![](README_files/figure-markdown_strict/boxplots-1.png)
+
+## Histogram to show distribution of key variables
+
+    ggplot(wine, aes(x = alcohol)) + geom_histogram(bins = 30) + ggtitle("Distribution of Alcohol")
+
+![](README_files/figure-markdown_strict/histograms-1.png)
 
 ## Hypothesis Testing
 
