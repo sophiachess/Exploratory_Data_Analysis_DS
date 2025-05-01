@@ -1,0 +1,163 @@
+---
+title: "README"
+author: "Sophia Hess"
+date: "2025-04-28"
+output: md_document
+github_document:
+pandoc_args: ["--wrap=none"]
+always_allow_html: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load_libraries}
+install.packages("corrplot", repos = "http://cran.us.r-project.org")
+
+# Load necessary libraries
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(corrplot)
+library(gridExtra)
+```
+
+```{r load_data}
+# Download red wine dataset
+wine <- read.csv("https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv", sep = ";")
+
+# Overview of dataset
+str(wine)
+summary(wine)
+head(wine)
+
+# Check for missing values
+cat("Missing values:", sum(is.na(wine)))
+
+# Describe data types
+cat("\nData Types of Features:\n")
+cat("1. fixed acidity: Ratio (g/L)\n")
+cat("2. volatile acidity: Ratio (g/L)\n")
+cat("3. citric acid: Ratio (g/L)\n")
+cat("4. residual sugar: Ratio (g/L)\n")
+cat("5. chlorides: Ratio (g/L)\n")
+cat("6. free sulfur dioxide: Ratio (mg/L)\n")
+cat("7. total sulfur dioxide: Ratio (mg/L)\n")
+cat("8. density: Ratio (g/cm³)\n")
+cat("9. pH: Ratio (scale from 0-14)\n")
+cat("10. sulphates: Ratio (g/L)\n")
+cat("11. alcohol: Ratio (% by volume)\n")
+cat("12. quality: Ordinal (score between 0-10)\n")
+```
+## -- Business Understanding --
+## What makes a good quality wine? 🍷
+Based on the research, wine producers want to identify controllable factors that could 
+help improve product quality, particularly in chemical composition of wine. 
+A high-quality wine is influenced by a combination of chemical, sensory, and structural 
+attributes. Research and industry analysis highlights factors like **alcohol content**, 
+**acidity**, **sugar levels**, and **volatile acidity** as crucial to consumer perception and 
+expert ratings. Higher alcohol levels are linked to better body and richness, and 
+lower volatile acidity is linked to cleaner, more pleasant aromas. **Citric acid** also 
+contributes to a wine's freshness, and **sulphates** help preserve wine and enhance structure. 
+Additionally, **pH levels** and **density** affect the wine's stability, fermentation quality, and 
+taste balance. Understanding how all these variables interact allows producers to refine 
+fermentation and aging processes to make more desirable wines.
+
+## -- Data Understanding --
+## General info about the dataset
+1. **Dataset:** UCI Wine Quality Dataset
+2. **Samples:** 1,599 red wines
+3. **Features:** 11 numeric chemical properties + 1 quality rating
+4. **Target variable:** `quality` (integer from 0-10, treated as ordinal)
+5. **Feature types:** all features are **ratio** (ex/ pH, alcohol, sulphates)
+
+## What type of data do these attributes hold?
+Data Type	Attributes
+**Nominal** (Categorical, Unordered): no variables
+**Ordinal** (Categorical, Ordered): quality, quality_factor
+**Interval**: pH
+**Ratio**: fixed acidity, volatile acidity, citric acid, residual sugar, 
+chlorides, free sulfur dioxide, total sulfure dioxide, density, sulphates, 
+and alcohol
+
+```{r}
+# Basic dimensions
+cat("Number of samples: ", nrow(wine), "\n")
+cat("Number of features (excluding quality): ", ncol(wine)-1, "\n")
+
+# View column names
+colnames(wine)
+
+# Summary statistics for all features
+summary(wine)
+
+# Data types of features
+sapply(wine, class)
+
+# Manual classification of feature types
+feature_types <- tibble(Feature = names(wine), 
+                        Role = ifelse(names(wine) == "quality", "Target", "Predictor"), 
+                        Type = ifelse(names(wine) == "quality", "Ordinal", "Ratio"))
+
+print(feature_types)
+```
+
+## -- Data Preparation --
+## How was the data loaded? Were any changes made to it?
+The data was loaded from a CSV file (`winequality-red.csv`). No missing values 
+were found. It created a categorical version of `quality` for boxplot visualization, 
+and created a binary label `good` = 1 if quality >= 7, else 0
+
+```{r}
+sum(is.na(wine)) # Check for missing values
+wine$quality_factor <- factor(wine$quality)
+
+```
+
+## -- EDA: Exploratory Data Analysis & Modeling -- 
+## Correlation Matrix
+- **Alcohol:** Positively correlated with quality
+- **Volatile Acidity:** Negatively correlated with quality
+- **Density:** Negatively correlated with alcohol
+
+```{r correlation-plot}
+corrplot(cor(wine[, 1:11]), method = "color", tl.cex = 0.8)
+```
+
+## Boxplots by Wine Quality
+
+```{r boxplots}
+p1 <- ggplot(wine, aes(x = quality_factor, y = alcohol)) + geom_boxplot() + ggtitle("Alcohol vs Quality")
+p2 <- ggplot(wine, aes(x = quality_factor, y = volatile.acidity)) + geom_boxplot() + ggtitle("Volatile Acidity vs Quality")
+grid.arrange(p1, p2, ncol = 2)
+```
+
+## Hypothesis Testing
+T-test shows statistically significant difference in **alcohol content** between 
+wines rated 5 vs. 7 (`p < 0.05`)
+
+```{r t-test}
+t.test(alcohol ~ quality_factor, data = wine %>% filter(quality %in% c(5, 7)))
+```
+
+## Logistic Regression (Good vs. Bad Wine)
+
+```{r logistic-model}
+wine$good <- ifelse(wine$quality >= 7, 1, 0)
+
+model <- glm(good ~ alcohol + volatile.acidity + sulphates + citric.acid, data = wine, family = binomial)
+summary(model)
+```
+
+## -- Actionable Insights --
+## What are my observations?
+Running a correlational analysis, my observations are that there is a strong 
+negative correlation between alcohol and density, and alcohol has a strong 
+positive correlation with quality. 
+1. **Increase Alcohol Content**
+  Strongest predictor of higher quality
+2. **Lower Volatile Acidity**
+  Associated with better taste and aroma
+3. **Optimize Sulphates and Citric Acid**
+  Can improve preservation and perceived freshness
