@@ -32,6 +32,11 @@ str(wine)
 summary(wine)
 head(wine)
 
+# Distribution plots to check skewness and outliers
+ggplot(wine, aes(x = alcohol)) + geom_histogram(bins = 30, fill = "skyblue") + ggtitle("Distribution of Alcohol")
+ggplot(wine, aes(x = volatile.acidity)) + geom_histogram(bins = 30, fill = "lightcoral") + ggtitle("Distribution of Volatile Acidity")
+ggplot(wine, aes(x = pH)) + geom_histogram(bins = 30, fill = "lightgreen") + ggtitle("Distribution of pH")
+
 # Check for missing values
 cat("Missing values:", sum(is.na(wine)))
 
@@ -116,13 +121,15 @@ wine$quality_factor <- factor(wine$quality)
 ```
 
 ## -- EDA: Exploratory Data Analysis & Modeling -- 
-## Correlation Matrix
+## Correlation Matrix and Scatterplot Matrix
 - **Alcohol:** Positively correlated with quality
 - **Volatile Acidity:** Negatively correlated with quality
 - **Density:** Negatively correlated with alcohol
 
-```{r correlation-plot}
+```{r}
 corrplot(cor(wine[, 1:11]), method = "color", tl.cex = 0.8)
+GGally::ggpairs(wine[, c("alcohol", "volatile.acidity", "sulphates", "citric.acid", "quality")])
+
 ```
 
 ## Boxplots by Wine Quality
@@ -138,13 +145,24 @@ ggplot(wine, aes(x = alcohol)) + geom_histogram(bins = 30) + ggtitle("Distributi
 ```
 
 ## Hypothesis Testing
+## What is my hypothesis?
+H0: Mean alcohol content of quality 5 and quality 7 wines are equal
+Ha: Mean alcohol content of quality 7 wines is higher
+
 T-test shows statistically significant difference in **alcohol content** between 
 wines rated 5 vs. 7 (`p < 0.05`)
+
 ```{r t-test}
+## Check normality assumptions before performing t-test
+shapiro.test(wine$alcohol[wine$quality == 5])
+shapiro.test(wine$alcohol[wine$quality == 7])
+
 t.test(alcohol ~ quality_factor, data = wine %>% filter(quality %in% c(5, 7)))
 ```
 
 ## Logistic Regression (Good vs. Bad Wine)
+Predicts whether a wine is "good" (`quality` >= 7) based on the selected chemical properties. 
+Using alcohol, volatile acidity, sulphates, and citric acid as predictors. 
 ```{r logistic-model}
 wine$good <- ifelse(wine$quality >= 7, 1, 0)
 

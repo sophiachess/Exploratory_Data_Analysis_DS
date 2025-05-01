@@ -2,7 +2,7 @@
 
     ## 
     ## The downloaded binary packages are in
-    ##  /var/folders/qp/11c2sykd59dc_8h4549nm36h0000gn/T//RtmpnjfO9j/downloaded_packages
+    ##  /var/folders/qp/11c2sykd59dc_8h4549nm36h0000gn/T//RtmpKd9fR2/downloaded_packages
 
     # Load necessary libraries
     library(tidyverse)
@@ -100,6 +100,19 @@
     ## 4       6
     ## 5       5
     ## 6       5
+
+    # Distribution plots to check skewness and outliers
+    ggplot(wine, aes(x = alcohol)) + geom_histogram(bins = 30, fill = "skyblue") + ggtitle("Distribution of Alcohol")
+
+![](README_files/figure-markdown_strict/load_data-1.png)
+
+    ggplot(wine, aes(x = volatile.acidity)) + geom_histogram(bins = 30, fill = "lightcoral") + ggtitle("Distribution of Volatile Acidity")
+
+![](README_files/figure-markdown_strict/load_data-2.png)
+
+    ggplot(wine, aes(x = pH)) + geom_histogram(bins = 30, fill = "lightgreen") + ggtitle("Distribution of pH")
+
+![](README_files/figure-markdown_strict/load_data-3.png)
 
     # Check for missing values
     cat("Missing values:", sum(is.na(wine)))
@@ -293,7 +306,7 @@ boxplot visualization, and created a binary label `good` = 1 if quality
 
 ## – EDA: Exploratory Data Analysis & Modeling –
 
-## Correlation Matrix
+## Correlation Matrix and Scatterplot Matrix
 
 -   **Alcohol:** Positively correlated with quality
 -   **Volatile Acidity:** Negatively correlated with quality
@@ -303,7 +316,15 @@ boxplot visualization, and created a binary label `good` = 1 if quality
 
     corrplot(cor(wine[, 1:11]), method = "color", tl.cex = 0.8)
 
-![](README_files/figure-markdown_strict/correlation-plot-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-3-1.png)
+
+    GGally::ggpairs(wine[, c("alcohol", "volatile.acidity", "sulphates", "citric.acid", "quality")])
+
+    ## Registered S3 method overwritten by 'GGally':
+    ##   method from   
+    ##   +.gg   ggplot2
+
+![](README_files/figure-markdown_strict/unnamed-chunk-3-2.png)
 
 ## Boxplots by Wine Quality
 
@@ -321,8 +342,30 @@ boxplot visualization, and created a binary label `good` = 1 if quality
 
 ## Hypothesis Testing
 
+## What is my hypothesis?
+
+H0: Mean alcohol content of quality 5 and quality 7 wines are equal Ha:
+Mean alcohol content of quality 7 wines is higher
+
 T-test shows statistically significant difference in **alcohol content**
 between wines rated 5 vs. 7 (`p < 0.05`)
+
+    ## Check normality assumptions before performing t-test
+    shapiro.test(wine$alcohol[wine$quality == 5])
+
+    ## 
+    ##  Shapiro-Wilk normality test
+    ## 
+    ## data:  wine$alcohol[wine$quality == 5]
+    ## W = 0.84302, p-value < 2.2e-16
+
+    shapiro.test(wine$alcohol[wine$quality == 7])
+
+    ## 
+    ##  Shapiro-Wilk normality test
+    ## 
+    ## data:  wine$alcohol[wine$quality == 7]
+    ## W = 0.99166, p-value = 0.3108
 
     t.test(alcohol ~ quality_factor, data = wine %>% filter(quality %in% c(5, 7)))
 
@@ -339,6 +382,10 @@ between wines rated 5 vs. 7 (`p < 0.05`)
     ##        9.899706       11.465913
 
 ## Logistic Regression (Good vs. Bad Wine)
+
+Predicts whether a wine is “good” (`quality` &gt;= 7) based on the
+selected chemical properties. Using alcohol, volatile acidity,
+sulphates, and citric acid as predictors.
 
     wine$good <- ifelse(wine$quality >= 7, 1, 0)
 
