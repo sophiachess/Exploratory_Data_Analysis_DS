@@ -2,7 +2,7 @@
 
     ## 
     ## The downloaded binary packages are in
-    ##  /var/folders/qp/11c2sykd59dc_8h4549nm36h0000gn/T//RtmpKd9fR2/downloaded_packages
+    ##  /var/folders/qp/11c2sykd59dc_8h4549nm36h0000gn/T//RtmpL861DI/downloaded_packages
 
     # Load necessary libraries
     library(tidyverse)
@@ -33,10 +33,43 @@
     ## 
     ##     combine
 
+## – Business Understanding –
+
+## What makes a good quality wine? 🍷
+
+Based on the research, wine producers want to identify controllable
+factors that could help improve product quality, particularly in
+chemical composition of wine. A high-quality wine is influenced by a
+combination of chemical, sensory, and structural attributes. Research
+and industry analysis highlights factors like **alcohol content**,
+**acidity**, **sugar levels**, and **volatile acidity** as crucial to
+consumer perception and expert ratings. Higher alcohol levels are linked
+to better body and richness, and lower volatile acidity is linked to
+cleaner, more pleasant aromas. **Citric acid** also contributes to a
+wine’s freshness, and **sulphates** help preserve wine and enhance
+structure. Additionally, **pH levels** and **density** affect the wine’s
+stability, fermentation quality, and taste balance. Understanding how
+all these variables interact allows producers to refine fermentation and
+aging processes to make more desirable wines.
+
+## – Data Understanding –
+
+## General info about the dataset
+
+1.  **Dataset:** UCI Wine Quality Dataset
+2.  **Samples:** 1,599 red wines
+3.  **Features:** 11 numeric chemical properties + 1 quality rating
+4.  **Target variable:** `quality` (integer from 0-10, treated as
+    ordinal)
+5.  **Feature types:** all features are **ratio** (ex/ pH, alcohol,
+    sulphates)
+
+<!-- -->
+
     # Download red wine dataset
     wine <- read.csv("https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv", sep = ";")
 
-    # Overview of dataset
+    # Check structure of data
     str(wine)
 
     ## 'data.frame':    1599 obs. of  12 variables:
@@ -53,6 +86,59 @@
     ##  $ alcohol             : num  9.4 9.8 9.8 9.8 9.4 9.4 9.4 10 9.5 10.5 ...
     ##  $ quality             : int  5 5 5 6 5 5 5 7 7 5 ...
 
+    # Distribution plots to check skewness and outliers
+    ggplot(wine, aes(x = alcohol)) + geom_histogram(bins = 30, fill = "skyblue") + ggtitle("Distribution of Alcohol")
+
+![](README_files/figure-markdown_strict/load_data-1.png)
+
+    ggplot(wine, aes(x = volatile.acidity)) + geom_histogram(bins = 30, fill = "lightcoral") + ggtitle("Distribution of Volatile Acidity")
+
+![](README_files/figure-markdown_strict/load_data-2.png)
+
+    ggplot(wine, aes(x = pH)) + geom_histogram(bins = 30, fill = "lightgreen") + ggtitle("Distribution of pH")
+
+![](README_files/figure-markdown_strict/load_data-3.png)
+
+    # Check for missing values
+    cat("Missing values:", sum(is.na(wine)))
+
+    ## Missing values: 0
+
+## What type of data do these attributes hold?
+
+Data Type Attributes **Nominal** (Categorical, Unordered): no variables
+**Ordinal** (Categorical, Ordered): quality, quality\_factor
+**Interval**: pH **Ratio**: fixed acidity, volatile acidity, citric
+acid, residual sugar, chlorides, free sulfur dioxide, total sulfur
+dioxide, density, sulphates, and alcohol
+
+## – Data Preparation –
+
+## How was the data loaded? Were any changes made to it?
+
+The data was loaded from a CSV file (`winequality-red.csv`). No missing
+values were found. It created a categorical version of `quality` for
+boxplot visualization, and created a binary label `good` = 1 if quality
+&gt;= 7, else 0
+
+    # Basic dimensions
+    cat("Number of samples: ", nrow(wine), "\n")
+
+    ## Number of samples:  1599
+
+    cat("Number of features (excluding quality): ", ncol(wine)-1, "\n")
+
+    ## Number of features (excluding quality):  11
+
+    # View column names
+    colnames(wine)
+
+    ##  [1] "fixed.acidity"        "volatile.acidity"     "citric.acid"         
+    ##  [4] "residual.sugar"       "chlorides"            "free.sulfur.dioxide" 
+    ##  [7] "total.sulfur.dioxide" "density"              "pH"                  
+    ## [10] "sulphates"            "alcohol"              "quality"
+
+    # Summary statistics for all features
     summary(wine)
 
     ##  fixed.acidity   volatile.acidity  citric.acid    residual.sugar  
@@ -101,159 +187,6 @@
     ## 5       5
     ## 6       5
 
-    # Distribution plots to check skewness and outliers
-    ggplot(wine, aes(x = alcohol)) + geom_histogram(bins = 30, fill = "skyblue") + ggtitle("Distribution of Alcohol")
-
-![](README_files/figure-markdown_strict/load_data-1.png)
-
-    ggplot(wine, aes(x = volatile.acidity)) + geom_histogram(bins = 30, fill = "lightcoral") + ggtitle("Distribution of Volatile Acidity")
-
-![](README_files/figure-markdown_strict/load_data-2.png)
-
-    ggplot(wine, aes(x = pH)) + geom_histogram(bins = 30, fill = "lightgreen") + ggtitle("Distribution of pH")
-
-![](README_files/figure-markdown_strict/load_data-3.png)
-
-    # Check for missing values
-    cat("Missing values:", sum(is.na(wine)))
-
-    ## Missing values: 0
-
-    # Describe data types
-    cat("\nData Types of Features:\n")
-
-    ## 
-    ## Data Types of Features:
-
-    cat("1. fixed acidity: Ratio (g/L)\n")
-
-    ## 1. fixed acidity: Ratio (g/L)
-
-    cat("2. volatile acidity: Ratio (g/L)\n")
-
-    ## 2. volatile acidity: Ratio (g/L)
-
-    cat("3. citric acid: Ratio (g/L)\n")
-
-    ## 3. citric acid: Ratio (g/L)
-
-    cat("4. residual sugar: Ratio (g/L)\n")
-
-    ## 4. residual sugar: Ratio (g/L)
-
-    cat("5. chlorides: Ratio (g/L)\n")
-
-    ## 5. chlorides: Ratio (g/L)
-
-    cat("6. free sulfur dioxide: Ratio (mg/L)\n")
-
-    ## 6. free sulfur dioxide: Ratio (mg/L)
-
-    cat("7. total sulfur dioxide: Ratio (mg/L)\n")
-
-    ## 7. total sulfur dioxide: Ratio (mg/L)
-
-    cat("8. density: Ratio (g/cm³)\n")
-
-    ## 8. density: Ratio (g/cm³)
-
-    cat("9. pH: Ratio (scale from 0-14)\n")
-
-    ## 9. pH: Ratio (scale from 0-14)
-
-    cat("10. sulphates: Ratio (g/L)\n")
-
-    ## 10. sulphates: Ratio (g/L)
-
-    cat("11. alcohol: Ratio (% by volume)\n")
-
-    ## 11. alcohol: Ratio (% by volume)
-
-    cat("12. quality: Ordinal (score between 0-10)\n")
-
-    ## 12. quality: Ordinal (score between 0-10)
-
-## – Business Understanding –
-
-## What makes a good quality wine? 🍷
-
-Based on the research, wine producers want to identify controllable
-factors that could help improve product quality, particularly in
-chemical composition of wine. A high-quality wine is influenced by a
-combination of chemical, sensory, and structural attributes. Research
-and industry analysis highlights factors like **alcohol content**,
-**acidity**, **sugar levels**, and **volatile acidity** as crucial to
-consumer perception and expert ratings. Higher alcohol levels are linked
-to better body and richness, and lower volatile acidity is linked to
-cleaner, more pleasant aromas. **Citric acid** also contributes to a
-wine’s freshness, and **sulphates** help preserve wine and enhance
-structure. Additionally, **pH levels** and **density** affect the wine’s
-stability, fermentation quality, and taste balance. Understanding how
-all these variables interact allows producers to refine fermentation and
-aging processes to make more desirable wines.
-
-## – Data Understanding –
-
-## General info about the dataset
-
-1.  **Dataset:** UCI Wine Quality Dataset
-2.  **Samples:** 1,599 red wines
-3.  **Features:** 11 numeric chemical properties + 1 quality rating
-4.  **Target variable:** `quality` (integer from 0-10, treated as
-    ordinal)
-5.  **Feature types:** all features are **ratio** (ex/ pH, alcohol,
-    sulphates)
-
-## What type of data do these attributes hold?
-
-Data Type Attributes **Nominal** (Categorical, Unordered): no variables
-**Ordinal** (Categorical, Ordered): quality, quality\_factor
-**Interval**: pH **Ratio**: fixed acidity, volatile acidity, citric
-acid, residual sugar, chlorides, free sulfur dioxide, total sulfure
-dioxide, density, sulphates, and alcohol
-
-    # Basic dimensions
-    cat("Number of samples: ", nrow(wine), "\n")
-
-    ## Number of samples:  1599
-
-    cat("Number of features (excluding quality): ", ncol(wine)-1, "\n")
-
-    ## Number of features (excluding quality):  11
-
-    # View column names
-    colnames(wine)
-
-    ##  [1] "fixed.acidity"        "volatile.acidity"     "citric.acid"         
-    ##  [4] "residual.sugar"       "chlorides"            "free.sulfur.dioxide" 
-    ##  [7] "total.sulfur.dioxide" "density"              "pH"                  
-    ## [10] "sulphates"            "alcohol"              "quality"
-
-    # Summary statistics for all features
-    summary(wine)
-
-    ##  fixed.acidity   volatile.acidity  citric.acid    residual.sugar  
-    ##  Min.   : 4.60   Min.   :0.1200   Min.   :0.000   Min.   : 0.900  
-    ##  1st Qu.: 7.10   1st Qu.:0.3900   1st Qu.:0.090   1st Qu.: 1.900  
-    ##  Median : 7.90   Median :0.5200   Median :0.260   Median : 2.200  
-    ##  Mean   : 8.32   Mean   :0.5278   Mean   :0.271   Mean   : 2.539  
-    ##  3rd Qu.: 9.20   3rd Qu.:0.6400   3rd Qu.:0.420   3rd Qu.: 2.600  
-    ##  Max.   :15.90   Max.   :1.5800   Max.   :1.000   Max.   :15.500  
-    ##    chlorides       free.sulfur.dioxide total.sulfur.dioxide    density      
-    ##  Min.   :0.01200   Min.   : 1.00       Min.   :  6.00       Min.   :0.9901  
-    ##  1st Qu.:0.07000   1st Qu.: 7.00       1st Qu.: 22.00       1st Qu.:0.9956  
-    ##  Median :0.07900   Median :14.00       Median : 38.00       Median :0.9968  
-    ##  Mean   :0.08747   Mean   :15.87       Mean   : 46.47       Mean   :0.9967  
-    ##  3rd Qu.:0.09000   3rd Qu.:21.00       3rd Qu.: 62.00       3rd Qu.:0.9978  
-    ##  Max.   :0.61100   Max.   :72.00       Max.   :289.00       Max.   :1.0037  
-    ##        pH          sulphates         alcohol         quality     
-    ##  Min.   :2.740   Min.   :0.3300   Min.   : 8.40   Min.   :3.000  
-    ##  1st Qu.:3.210   1st Qu.:0.5500   1st Qu.: 9.50   1st Qu.:5.000  
-    ##  Median :3.310   Median :0.6200   Median :10.20   Median :6.000  
-    ##  Mean   :3.311   Mean   :0.6581   Mean   :10.42   Mean   :5.636  
-    ##  3rd Qu.:3.400   3rd Qu.:0.7300   3rd Qu.:11.10   3rd Qu.:6.000  
-    ##  Max.   :4.010   Max.   :2.0000   Max.   :14.90   Max.   :8.000
-
     # Data types of features
     sapply(wine, class)
 
@@ -270,7 +203,6 @@ dioxide, density, sulphates, and alcohol
     feature_types <- tibble(Feature = names(wine), 
                             Role = ifelse(names(wine) == "quality", "Target", "Predictor"), 
                             Type = ifelse(names(wine) == "quality", "Ordinal", "Ratio"))
-
     print(feature_types)
 
     ## # A tibble: 12 × 3
@@ -289,19 +221,7 @@ dioxide, density, sulphates, and alcohol
     ## 11 alcohol              Predictor Ratio  
     ## 12 quality              Target    Ordinal
 
-## – Data Preparation –
-
-## How was the data loaded? Were any changes made to it?
-
-The data was loaded from a CSV file (`winequality-red.csv`). No missing
-values were found. It created a categorical version of `quality` for
-boxplot visualization, and created a binary label `good` = 1 if quality
-&gt;= 7, else 0
-
-    sum(is.na(wine)) # Check for missing values
-
-    ## [1] 0
-
+    # Create factor version of quality for plotting and testing
     wine$quality_factor <- factor(wine$quality)
 
 ## – EDA: Exploratory Data Analysis & Modeling –
@@ -312,24 +232,31 @@ boxplot visualization, and created a binary label `good` = 1 if quality
 -   **Volatile Acidity:** Negatively correlated with quality
 -   **Density:** Negatively correlated with alcohol
 
-<!-- -->
+We want to understand how each chemical property relates to wine
+quality. A correlation matrix shows the strength and direction of
+relationships between variables.
 
+    # Correlation matrix
     corrplot(cor(wine[, 1:11]), method = "color", tl.cex = 0.8)
 
-![](README_files/figure-markdown_strict/unnamed-chunk-3-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-2-1.png)
 
+    # Scatterplot matrix
     GGally::ggpairs(wine[, c("alcohol", "volatile.acidity", "sulphates", "citric.acid", "quality")])
 
     ## Registered S3 method overwritten by 'GGally':
     ##   method from   
     ##   +.gg   ggplot2
 
-![](README_files/figure-markdown_strict/unnamed-chunk-3-2.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-2-2.png) From this
+correlation matrix, we observed that alcohol has a positive correlation
+with quality, while volatile acidity has a negative correlation.
 
 ## Boxplots by Wine Quality
 
     p1 <- ggplot(wine, aes(x = quality_factor, y = alcohol)) + geom_boxplot() + ggtitle("Alcohol vs Quality")
     p2 <- ggplot(wine, aes(x = quality_factor, y = volatile.acidity)) + geom_boxplot() + ggtitle("Volatile Acidity vs Quality")
+
     grid.arrange(p1, p2, ncol = 2)
 
 ![](README_files/figure-markdown_strict/boxplots-1.png)
@@ -350,7 +277,7 @@ Mean alcohol content of quality 7 wines is higher
 T-test shows statistically significant difference in **alcohol content**
 between wines rated 5 vs. 7 (`p < 0.05`)
 
-    ## Check normality assumptions before performing t-test
+    # Check normality assumptions for each group
     shapiro.test(wine$alcohol[wine$quality == 5])
 
     ## 
@@ -367,6 +294,22 @@ between wines rated 5 vs. 7 (`p < 0.05`)
     ## data:  wine$alcohol[wine$quality == 7]
     ## W = 0.99166, p-value = 0.3108
 
+    # Check variance equality
+    var.test(wine$alcohol[wine$quality == 5], wine$alcohol[wine$quality == 7])
+
+    ## 
+    ##  F test to compare two variances
+    ## 
+    ## data:  wine$alcohol[wine$quality == 5] and wine$alcohol[wine$quality == 7]
+    ## F = 0.58625, num df = 680, denom df = 198, p-value = 9.083e-07
+    ## alternative hypothesis: true ratio of variances is not equal to 1
+    ## 95 percent confidence interval:
+    ##  0.4651724 0.7285736
+    ## sample estimates:
+    ## ratio of variances 
+    ##           0.586247
+
+    # Running t-test
     t.test(alcohol ~ quality_factor, data = wine %>% filter(quality %in% c(5, 7)))
 
     ## 
@@ -380,6 +323,11 @@ between wines rated 5 vs. 7 (`p < 0.05`)
     ## sample estimates:
     ## mean in group 5 mean in group 7 
     ##        9.899706       11.465913
+
+We checked the normality assumption for each group using the
+Shapiro-Wilk test. Both groups show slight deviation from normality (p
+&lt; .05), but the t-test is strong to normality violations with large
+samples. We also check for equal variance using the F-test.
 
 ## Logistic Regression (Good vs. Bad Wine)
 
