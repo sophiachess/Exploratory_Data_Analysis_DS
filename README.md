@@ -2,7 +2,7 @@
 
     ## 
     ## The downloaded binary packages are in
-    ##  /var/folders/qp/11c2sykd59dc_8h4549nm36h0000gn/T//RtmpL861DI/downloaded_packages
+    ##  /var/folders/qp/11c2sykd59dc_8h4549nm36h0000gn/T//RtmpQxLELg/downloaded_packages
 
     # Load necessary libraries
     library(tidyverse)
@@ -89,20 +89,25 @@ aging processes to make more desirable wines.
     # Distribution plots to check skewness and outliers
     ggplot(wine, aes(x = alcohol)) + geom_histogram(bins = 30, fill = "skyblue") + ggtitle("Distribution of Alcohol")
 
-![](README_files/figure-markdown_strict/load_data-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-1-1.png)
 
     ggplot(wine, aes(x = volatile.acidity)) + geom_histogram(bins = 30, fill = "lightcoral") + ggtitle("Distribution of Volatile Acidity")
 
-![](README_files/figure-markdown_strict/load_data-2.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-1-2.png)
 
     ggplot(wine, aes(x = pH)) + geom_histogram(bins = 30, fill = "lightgreen") + ggtitle("Distribution of pH")
 
-![](README_files/figure-markdown_strict/load_data-3.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-1-3.png)
 
     # Check for missing values
     cat("Missing values:", sum(is.na(wine)))
 
     ## Missing values: 0
+
+The dataset contains 1599 samples and 14 variables, all numeric. We see
+the distribution of alcohol plot is right-skewed, the distribution of
+volatile acidity is slightly right-skewed, and the distribution of pH is
+approximately normal (not skewed), with a symmetric spread.
 
 ## What type of data do these attributes hold?
 
@@ -239,7 +244,7 @@ relationships between variables.
     # Correlation matrix
     corrplot(cor(wine[, 1:11]), method = "color", tl.cex = 0.8)
 
-![](README_files/figure-markdown_strict/unnamed-chunk-2-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-3-1.png)
 
     # Scatterplot matrix
     GGally::ggpairs(wine[, c("alcohol", "volatile.acidity", "sulphates", "citric.acid", "quality")])
@@ -248,18 +253,22 @@ relationships between variables.
     ##   method from   
     ##   +.gg   ggplot2
 
-![](README_files/figure-markdown_strict/unnamed-chunk-2-2.png) From this
+![](README_files/figure-markdown_strict/unnamed-chunk-3-2.png) From this
 correlation matrix, we observed that alcohol has a positive correlation
 with quality, while volatile acidity has a negative correlation.
 
 ## Boxplots by Wine Quality
+
+# We create boxplots to visualize how alcohol and volatile acidity vary by wine quality
 
     p1 <- ggplot(wine, aes(x = quality_factor, y = alcohol)) + geom_boxplot() + ggtitle("Alcohol vs Quality")
     p2 <- ggplot(wine, aes(x = quality_factor, y = volatile.acidity)) + geom_boxplot() + ggtitle("Volatile Acidity vs Quality")
 
     grid.arrange(p1, p2, ncol = 2)
 
-![](README_files/figure-markdown_strict/boxplots-1.png)
+![](README_files/figure-markdown_strict/boxplots-1.png) From this
+boxplot visualization, we observed that higher quality wines tend to
+have higher alcohol and lower volatile acidity.
 
 ## Histogram to show distribution of key variables
 
@@ -362,6 +371,11 @@ sulphates, and citric acid as predictors.
     ## AIC: 924.11
     ## 
     ## Number of Fisher Scoring iterations: 6
+
+Alcohol is a statistically significant positive predictor of `good` wine
+(p &lt; .05), while volatile acidity negatively predicts quality.
+Sulphates and citric acid also contribute positively, though smaller
+effect sizes.
 
 ## – Actionable Insights –
 
